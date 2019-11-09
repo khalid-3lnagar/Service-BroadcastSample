@@ -1,5 +1,7 @@
 package khalid.elnagar.servicesample
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
 import android.content.ComponentName
@@ -7,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.os.SystemClock
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -18,17 +21,27 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         btn_start_service.setOnClickListener {
-
             Intent(this, StartedService::class.java).run(::startService)
-
         }
         btn_stop_service.setOnClickListener {
             Intent(this, StartedService::class.java).run(::stopService)
         }
 
         btn_schedule_job.setOnClickListener { scheduleTestJob() }
+        btn_alarm.setOnClickListener { setToastAlarm() }
         IntentFilter(ACTION_SHOW_TOAST_EVENT)
             .also { filter -> registerReceiver(showToastBroadcastReceiver, filter) }
+    }
+
+    private fun setToastAlarm() {
+
+        val pendingIntent = Intent(this, ShowToastBroadcastReceiver::class.java)
+            .putExtra(EXTRA_COUNT, ALARM_MANGER_TOAST)
+            .let { PendingIntent.getBroadcast(this, 0, it, PendingIntent.FLAG_UPDATE_CURRENT) }
+
+        val alarmTime = SystemClock.elapsedRealtime().plus(5 * 1000)
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME, alarmTime, pendingIntent)
     }
 
 

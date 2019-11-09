@@ -12,7 +12,9 @@
         <receiver
             android:name=".ShowToastBroadcastReceiver"
             android:enabled="true"
-            android:exported="true"></receiver>
+            android:exported="true">
+
+        </receiver>
 
         <service
             android:name=".TestJobService"
