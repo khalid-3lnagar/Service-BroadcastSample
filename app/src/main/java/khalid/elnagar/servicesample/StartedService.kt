@@ -5,7 +5,9 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
-import kotlinx.coroutines.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class StartedService : Service() {
     private val TAG = javaClass.name
@@ -17,42 +19,25 @@ class StartedService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "onStartCommand at Thread ${currentTreadName()}")
+        Log.d(TAG, "onStartCommand at Thread ${currentThreadName()}")
 
-        showToast()
+        GlobalScope.launch(job) {
+            backgroundWork(TAG) {
+                toast?.cancel()
+                toast = Toast.makeText(this@StartedService, "counting $it", Toast.LENGTH_SHORT)
+                toast?.show()
+            }
+        }
 
         return START_STICKY
     }
 
-    private fun showToast() {
-        GlobalScope.launch(job) {
-
-            Log.d(TAG, "launching the corourtine at Thread ${currentTreadName()}")
-            repeat(1000) {
-                delay(250)
-                Log.d(TAG, "delaying the corourtine at Thread ${currentTreadName()}")
-
-                withContext(Dispatchers.Main) {
-                    Log.d(TAG, "showing toast at Thread ${currentTreadName()}")
-                    toast?.cancel()
-                    toast = Toast.makeText(this@StartedService, "countind $it", Toast.LENGTH_SHORT)
-                    toast?.show()
-                }
-                delay(250)
-
-                Log.d(TAG, " another delaying the corourtine at Thread ${currentTreadName()}")
-
-
-            }
-        }
-    }
 
     override fun onBind(p0: Intent?): IBinder? = null
     override fun onDestroy() {
-        Log.d(TAG, "onDestroy at Thread ${currentTreadName()}")
+        Log.d(TAG, "onDestroy at Thread ${currentThreadName()}")
         job.cancel()
         super.onDestroy()
     }
 }
 
-fun currentTreadName() = Thread.currentThread().name
