@@ -5,6 +5,7 @@ import android.app.job.JobScheduler
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -12,7 +13,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 private const val TEST_JOB_ID = 0
 
 class MainActivity : AppCompatActivity() {
-
+    private val showToastBroadcastReceiver by lazy { ShowToastBroadcastReceiver() }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -22,12 +23,14 @@ class MainActivity : AppCompatActivity() {
 
         }
         btn_stop_service.setOnClickListener {
-
             Intent(this, StartedService::class.java).run(::stopService)
         }
 
         btn_schedule_job.setOnClickListener { scheduleTestJob() }
+        IntentFilter(ACTION_SHOW_TOAST_EVENT)
+            .also { filter -> registerReceiver(showToastBroadcastReceiver, filter) }
     }
+
 
     private fun scheduleTestJob() {
         val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
@@ -38,4 +41,9 @@ class MainActivity : AppCompatActivity() {
             .run(jobScheduler::schedule)
     }
 
+    override fun onDestroy() {
+        unregisterReceiver(showToastBroadcastReceiver)
+        super.onDestroy()
+
+    }
 }

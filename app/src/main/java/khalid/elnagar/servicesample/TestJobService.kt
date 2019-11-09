@@ -15,16 +15,13 @@ class TestJobService : JobService() {
     override fun onStartJob(jobParameters: JobParameters?): Boolean {
         Log.d(TAG, "onStartJob at Thread ${currentThreadName()}")
         val onFinish = { jobFinished(jobParameters, false) }
-        GlobalScope.launch(job) { backgroundWork(TAG, onFinish, ::showToast) }
+        GlobalScope.launch(job) {
+            backgroundWork(TAG, onFinish) { count -> sendToastBroadcast(count) }
+        }
 
         return true
     }
 
-    private fun showToast(it: Int) {
-        toast?.cancel()
-        toast = Toast.makeText(this@TestJobService, "counting $it", Toast.LENGTH_SHORT)
-        toast?.show()
-    }
 
     override fun onStopJob(jobParameters: JobParameters?): Boolean {
         Log.d(TAG, "onStopJob at Thread ${currentThreadName()}")
